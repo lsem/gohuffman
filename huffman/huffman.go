@@ -177,10 +177,9 @@ func Encode(data []byte, fileName string) {
 			//panic(errors.New("pizdec"));
 		}
 		// todo: does it matter left is p or left is q?
-		newNode := HuffmanTreeNode{q, p, uint32(p.weight + q.weight), nil}
-		if newNode.weight == 0 {
-			//panic(errors.New("pizdec"));
-		}
+		newNode := HuffmanTreeNode{left: q, right: p,
+			weight: uint32(p.weight + q.weight), symbol: nil}
+
 		heap.Push(&queue, &newNode)
 		lastNode = &newNode
 	}
@@ -189,7 +188,7 @@ func Encode(data []byte, fileName string) {
 	println("Build Coding")
 	// having Huffman tree, create coding where keys contain symbols from
 	// file and values corresponding sequence of 0 and 1 for given symbol
-	codingTable := buildCodingFromTree(*lastNode, make([]byte, 0))
+	codingTable := BuildCodingFromTree(*lastNode, make([]byte, 0))
 
 	// Build fast coding table optimized for numerous looks up
 	fastCodingTable := make([][]byte, 256)
