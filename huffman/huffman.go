@@ -2,7 +2,6 @@ package huffman
 
 import (
 	"bytes"
-	"container/heap"
 	"errors"
 	"fmt"
 	"io"
@@ -132,65 +131,40 @@ func min(x, y int) int {
 	return y
 }
 
-func treeHeight(node *HuffmanTreeNode) int {
-	if node == nil {
-		return 0
-	} else {
-		return 1 + max(treeHeight(node.left), treeHeight(node.right))
+func DoEncode(data []byte, fileName string) {
+
+}
+
+func frequenciesTableToMap(table [256]int) map[byte]int {
+	frequenciesAsMap := make(map[byte]int)
+	for i := 0; i < 256; i++ {
+		if table[i] != 0 {
+			frequenciesAsMap[byte(i)] = table[i]
+		}
 	}
+	return frequenciesAsMap
 }
 
 func Encode(data []byte, fileName string) {
 	// calculate frequencies for each of bytes
 	println("Freq")
 
+	// We are inserting each byte of entire input dataset, map operations
+	// are quite slow at this amount of data, so we use just table for this purposes.
 	var frequenciesTable [256]int
 	for _, x := range data {
 		frequenciesTable[x]++
 	}
-	frequencies := make(map[byte]int)
-	for i := 0; i < 256; i++ {
-		frequencies[byte(i)] = frequenciesTable[i]
-	}
 
-	// create tree nodes and push all them to the priority queue
-	println("Queue Prep")
-	var queue HuffmanTreeNodePriorityQueue
-	for k, v := range frequencies {
-		if v == 0 {
-			// this would not exist in original frequencies map.
-			continue
-		}
-		symbol := k
-		newNode := HuffmanTreeNode{nil, nil, uint32(v), &symbol}
-		queue = append(queue, &newNode)
-	}
-	heap.Init(&queue)
-
-	// build Huffman tree
-	println("Tree Prep")
-	var lastNode *HuffmanTreeNode = nil
-	for len(queue) > 1 {
-		p := heap.Pop(&queue).(*HuffmanTreeNode)
-		q := heap.Pop(&queue).(*HuffmanTreeNode)
-		if p.weight == 0 {
-			//panic(errors.New("pizdec"));
-		}
-		// todo: does it matter left is p or left is q?
-		newNode := HuffmanTreeNode{left: q, right: p,
-			weight: uint32(p.weight + q.weight), symbol: nil}
-
-		heap.Push(&queue, &newNode)
-		lastNode = &newNode
-	}
-	//fmt.Printf("Tree height: %v\n", treeHeight(lastNode))
+	huffmanTreeRoot := BuildHuffmanTree(frequenciesTableToMap(frequenciesTable))
 
 	println("Build Coding")
 	// having Huffman tree, create coding where keys contain symbols from
 	// file and values corresponding sequence of 0 and 1 for given symbol
-	codingTable := BuildCodingFromTree(*lastNode, make([]byte, 0))
+	codingTable := BuildCodingFromTree(huffmanTreeRoot, make([]byte, 0))
 
-	// Build fast coding table optimized for numerous looks up
+	// As how we used table for building frequencies table,
+	// we build fast coding table optimized for numerous looks up during encoding
 	fastCodingTable := make([][]byte, 256)
 	for bIndex := 0; bIndex < 256; bIndex++ {
 		fastCodingTable[bIndex] = codingTable[byte(bIndex)]
