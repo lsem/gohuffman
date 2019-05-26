@@ -9,7 +9,7 @@ func cloneAndExtend(slice []byte, nums ...byte) []byte {
 	return sliceCopy
 }
 
-func BuildCodingFromTree(node HuffmanTreeNode, coding []byte) CodingMap {
+func BuildCodingFromTree(node TreeNode, coding []byte) CodingMap {
 	if node.IsLeave() {
 		return CodingMap{*node.symbol: coding}
 	}

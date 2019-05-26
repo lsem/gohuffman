@@ -2,15 +2,15 @@ package huffman
 
 import "container/heap"
 
-type HuffmanTreeNodePriorityQueue []*HuffmanTreeNode
+type TreeNodePriorityQueue []*TreeNode
 
-func (self HuffmanTreeNodePriorityQueue) Len() int { return len(self) }
+func (self TreeNodePriorityQueue) Len() int { return len(self) }
 
-func (self HuffmanTreeNodePriorityQueue) Less(i, j int) bool {
+func (self TreeNodePriorityQueue) Less(i, j int) bool {
 	return self[i].weight < self[j].weight
 }
 
-func (self *HuffmanTreeNodePriorityQueue) Pop() interface{} {
+func (self *TreeNodePriorityQueue) Pop() interface{} {
 	old := *self
 	n := len(old)
 	item := old[n-1]
@@ -18,33 +18,33 @@ func (self *HuffmanTreeNodePriorityQueue) Pop() interface{} {
 	return item
 }
 
-func (self *HuffmanTreeNodePriorityQueue) Push(x interface{}) {
-	item := x.(*HuffmanTreeNode)
+func (self *TreeNodePriorityQueue) Push(x interface{}) {
+	item := x.(*TreeNode)
 	*self = append(*self, item)
 }
 
-func (self HuffmanTreeNodePriorityQueue) Swap(i, j int) {
+func (self TreeNodePriorityQueue) Swap(i, j int) {
 	self[i], self[j] = self[j], self[i]
 }
 
-type HuffmanPriorityQueue struct {
-	container HuffmanTreeNodePriorityQueue
+type PriorityQueue struct {
+	container TreeNodePriorityQueue
 }
 
-func (self *HuffmanPriorityQueue) Init(nodes []*HuffmanTreeNode) {
-	self.container = make([]*HuffmanTreeNode, len(nodes))
+func (self *PriorityQueue) Init(nodes []*TreeNode) {
+	self.container = make([]*TreeNode, len(nodes))
 	copy(self.container, nodes)
 	heap.Init(&self.container)
 }
 
-func (self *HuffmanPriorityQueue) Add(node HuffmanTreeNode) {
+func (self *PriorityQueue) Add(node TreeNode) {
 	heap.Push(&self.container, &node)
 }
 
-func (self *HuffmanPriorityQueue) Get() *HuffmanTreeNode {
-	return heap.Pop(&self.container).(*HuffmanTreeNode)
+func (self *PriorityQueue) Get() *TreeNode {
+	return heap.Pop(&self.container).(*TreeNode)
 }
 
-func (self HuffmanPriorityQueue) Len() int {
+func (self PriorityQueue) Len() int {
 	return len(self.container)
 }
