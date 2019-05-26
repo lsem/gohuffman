@@ -3,7 +3,6 @@ package huffman
 import (
 	"bytes"
 	"errors"
-	"fmt"
 	"io"
 	"os"
 	"sort"
@@ -66,11 +65,11 @@ func Decode(fileName string) (data []byte, err error) {
 		plainCodingData = append(plainCodingData, plainRecord)
 	}
 
-	// Read last byte and its size
-	lastByteSizeAndByte := make([]byte, 2)
-	if _, err := io.ReadFull(inputFile, lastByteSizeAndByte); err != nil {
-		return nil, errors.New("Failed reading last byte information")
-	}
+	//// Read last byte and its size
+	//lastByteSizeAndByte := make([]byte, 2)
+	//if _, err := io.ReadFull(inputFile, lastByteSizeAndByte); err != nil {
+	//	return nil, errors.New("Failed reading last byte information")
+	//}
 
 	sort.Slice(plainCodingData, func(i, j int) bool {
 		return PlainCodingDataRecordLess(plainCodingData[i], plainCodingData[j])
@@ -92,7 +91,10 @@ func Decode(fileName string) (data []byte, err error) {
 			if err == io.ErrUnexpectedEOF {
 				dataChunk = dataChunk[:bytesRead]
 				// todo: here last byte might require special handling taking into account its size
-				dataChunk = append(dataChunk, lastByteSizeAndByte[1])
+				//dataChunk = append(dataChunk, lastByteSizeAndByte[1])
+				dataProceessed = true
+			} else if err == io.EOF {
+				dataChunk = dataChunk[:bytesRead]
 				dataProceessed = true
 			} else {
 				panic(err)
@@ -130,66 +132,25 @@ func frequenciesTableToMap(table [256]int) map[byte]int {
 
 func Encode(data []byte, fileName string) {
 	// calculate frequencies for each of bytes
-	println("Freq")
-
-	// We are inserting each byte of entire input dataset, map operations
+	// Since we are interested each byte of entire input dataset, map operations
 	// are quite slow at this amount of data, so we use just table for this purposes.
 	var frequenciesTable [256]int
 	for _, x := range data {
 		frequenciesTable[x]++
 	}
 
-	huffmanTreeRoot := BuildHuffmanTree(frequenciesTableToMap(frequenciesTable))
+	writeBuffer := new(bytes.Buffer)
+	bufferWriter := BufferWritingClient{buffer: writeBuffer}
 
-	println("Build Coding")
-	// having Huffman tree, create coding where keys contain symbols from
-	// file and values corresponding sequence of 0 and 1 for given symbol
-	codingTable := BuildCodingFromTree(huffmanTreeRoot, make([]byte, 0))
+	coding := BuildCodingFromTree( BuildHuffmanTree(
+		frequenciesTableToMap(frequenciesTable)), make([]byte, 0))
 
-	// As how we used table for building frequencies table,
-	// we build fast coding table optimized for numerous looks up during encoding
-	fastCodingTable := make([][]byte, 256)
-	for bIndex := 0; bIndex < 256; bIndex++ {
-		fastCodingTable[bIndex] = codingTable[byte(bIndex)]
-	}
+	encoder := CreateEncoder(bufferWriter, coding)
 
-	var writeBuffer bytes.Buffer
-
-	// Encode data
-	println("Encode")
-	var totalBytesCount uint32
-	var currentByte byte
-	var bitsSetCount uint32
 	for _, dataByte := range data {
-		for _, bit := range fastCodingTable[dataByte] {
-			currentByte |= bit
-			bitsSetCount++
-			if bitsSetCount%8 == 0 {
-				//fmt.Printf("%3d: %b\n", totalBytesCount, currentByte)
-				writeBuffer.WriteByte(currentByte)
-				currentByte = 0
-				totalBytesCount++
-			} else { // make place for next bit
-				currentByte <<= 1
-			}
-		}
+		encoder.EncodeByte(dataByte)
 	}
-
-	// Process last byte; pad zeroes on right side
-	var lastByte byte
-	var lastByteBitsSize byte
-
-	lasByteBitsProcessed := bitsSetCount % 8
-	lastByteBitsSize = byte(lasByteBitsProcessed)
-	if lasByteBitsProcessed > 0 {
-		needsPadding := 8 - lasByteBitsProcessed
-		for i := 0; i < int(needsPadding-1); i++ {
-			currentByte |= 0
-			currentByte <<= 1
-		}
-		lastByte = currentByte
-		totalBytesCount++
-	}
+	encoder.Finalize()
 
 	var headerBuffer bytes.Buffer
 
@@ -203,16 +164,12 @@ func Encode(data []byte, fileName string) {
 	//	1 byte: length
 	//  [length] bytes of data.
 	for i := 0; i < 256; i++ {
-		bits := codingTable[byte(i)]
+		bits := coding[byte(i)]
 		headerBuffer.WriteByte(byte(len(bits)))
 		for _, bit := range bits {
 			headerBuffer.WriteByte(bit)
 		}
 	}
-
-	// Then leave space for last byte, 1 byte for bit-length and one for data.
-	headerBuffer.WriteByte(lastByteBitsSize)
-	headerBuffer.WriteByte(lastByte)
 
 	// Create file
 	outFile, err := os.Create(fileName)
@@ -232,6 +189,4 @@ func Encode(data []byte, fileName string) {
 	if err != nil {
 		panic(err)
 	}
-
-	fmt.Printf("Total bytes count: %d. Compress ratio: %v%%\n", totalBytesCount, int(100*float64(totalBytesCount)/float64(len(data))))
 }

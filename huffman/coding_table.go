@@ -10,6 +10,12 @@ func cloneAndExtend(slice []byte, nums ...byte) []byte {
 }
 
 func BuildCodingFromTree(node TreeNode, coding []byte) CodingMap {
+	// having Huffman tree, create coding where keys contain symbols from
+	// file and values corresponding sequence of 0 and 1 for given symbol
+
+	if coding == nil {
+		coding = make([]byte, 0)
+	}
 	if node.IsLeave() {
 		return CodingMap{*node.symbol: coding}
 	}
