@@ -1,6 +1,7 @@
 package huffman
 
-func privateFunction() {}
-
-func UtilFunction() {}
-
+func Assert(condition bool, message string) {
+	if (!condition) {
+		panic(message)
+	}
+}
