@@ -73,7 +73,7 @@ func Decode(fileName string) (data []byte, err error) {
 	}
 
 	sort.Slice(plainCodingData, func(i, j int) bool {
-		return plainCodingData_Less(plainCodingData[i], plainCodingData[j])
+		return PlainCodingDataRecordLess(plainCodingData[i], plainCodingData[j])
 	})
 	//fmt.Println(plainCodingData)
 
