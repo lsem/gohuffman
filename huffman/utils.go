@@ -1,7 +1,7 @@
 package huffman
 
 func Assert(condition bool, message string) {
-	if (!condition) {
+	if !condition {
 		panic(message)
 	}
 }
