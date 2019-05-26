@@ -31,11 +31,9 @@ type HuffmanPriorityQueue struct {
 	container HuffmanTreeNodePriorityQueue
 }
 
-func (self *HuffmanPriorityQueue) Init(nodes []HuffmanTreeNode) {
-	for _, node := range nodes {
-		n := node // we must copy, otherwise pointer to local node will be added
-		self.container = append(self.container, &n)
-	}
+func (self *HuffmanPriorityQueue) Init(nodes []*HuffmanTreeNode) {
+	self.container = make([]*HuffmanTreeNode, len(nodes))
+	copy(self.container, nodes)
 	heap.Init(&self.container)
 }
 
