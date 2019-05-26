@@ -7,7 +7,7 @@ type PlainCodingDataRecord struct {
 }
 
 func plainCodingData_Less(left, right PlainCodingDataRecord) bool {
-	commonLen := min(len(left.sequence), len(right.sequence))
+	commonLen := Min(len(left.sequence), len(right.sequence))
 	for idx := 0; idx < commonLen; idx++ {
 		if left.sequence[idx] != right.sequence[idx] {
 			return left.sequence[idx] < right.sequence[idx]

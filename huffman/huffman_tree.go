@@ -21,7 +21,7 @@ func (self *HuffmanTreeNode) Height() int {
 	if self == nil {
 		return 0
 	} else {
-		return 1 + max(self.left.Height(), self.right.Height())
+		return 1 + Max(self.left.Height(), self.right.Height())
 	}
 }
 

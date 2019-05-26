@@ -118,23 +118,6 @@ func Decode(fileName string) (data []byte, err error) {
 	return decodedBytes, nil
 }
 
-func max(x, y int) int {
-	if x > y {
-		return x
-	}
-	return y
-}
-func min(x, y int) int {
-	if x < y {
-		return x
-	}
-	return y
-}
-
-func DoEncode(data []byte, fileName string) {
-
-}
-
 func frequenciesTableToMap(table [256]int) map[byte]int {
 	frequenciesAsMap := make(map[byte]int)
 	for i := 0; i < 256; i++ {
