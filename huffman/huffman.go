@@ -37,13 +37,12 @@ func Decode(fileName string) (data []byte, err error) {
 		}
 
 		bitsNumber := bitsNumberBuff[0]
-
 		if bitsNumber == 0 {
 			// We no need empty sequences which means there is no going to be such byte in encoded sequence
 			continue
 		}
 
-		var bitsData= make([]byte, bitsNumber)
+		var bitsData = make([]byte, bitsNumber)
 		if _, err := io.ReadFull(inputFile, bitsData); err != nil {
 			return nil, errors.New("Failed reading coding table: bits data for record " + string(i))
 		}
@@ -52,13 +51,13 @@ func Decode(fileName string) (data []byte, err error) {
 	}
 
 	decodingTable := BuildDecodingTable(codingTable)
-
 	decodedBytes := make([]byte, 0)
+	sliceWritter := SliceWritter{sliceWriteTo: &decodedBytes}
+	decoder := CreateDecoder(&sliceWritter, decodingTable)
 
 	// Read data by chunks of 1024 (it would be nice to know length of data from header)
-	currentSequence := make([]byte, 0, 8)
-	dataProceessed := false
-	for !dataProceessed {
+	dataProcessed := false
+	for !dataProcessed {
 		// Read data
 		dataChunk := make([]byte, 1024)
 		if bytesRead, err := io.ReadFull(inputFile, dataChunk); err != nil {
@@ -66,27 +65,17 @@ func Decode(fileName string) (data []byte, err error) {
 				dataChunk = dataChunk[:bytesRead]
 				// todo: here last byte might require special handling taking into account its size
 				//dataChunk = append(dataChunk, lastByteSizeAndByte[1])
-				dataProceessed = true
+				dataProcessed = true
 			} else if err == io.EOF {
 				dataChunk = dataChunk[:bytesRead]
-				dataProceessed = true
+				dataProcessed = true
 			} else {
 				panic(err)
 			}
 		}
 		// Process data
-		for _, byte := range dataChunk {
-			for bitNum := 0; bitNum < 8; bitNum++ {
-				// Take MSB due to encoding order.
-				msb := (byte & 0x80) >> 7
-				currentSequence = append(currentSequence, msb)
-				byte <<= 1
-				index := decodingTable.IndexOf(currentSequence)
-				if index != -1 {
-					currentSequence = currentSequence[:0]
-					decodedBytes = append(decodedBytes, decodingTable.At(index).symbol)
-				}
-			}
+		for _, b := range dataChunk {
+			decoder.DecodeByte(b)
 		}
 	}
 	return decodedBytes, nil
