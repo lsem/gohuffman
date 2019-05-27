@@ -5,7 +5,6 @@ import (
 	"errors"
 	"io"
 	"os"
-	"sort"
 )
 
 var FILE_MAGIC = [4]byte{0x34, 0x89, 0x99, 0xff}
@@ -29,8 +28,6 @@ func Decode(fileName string) (data []byte, err error) {
 		return nil, errors.New("Invalid Magic")
 	}
 
-	var plainCodingData = make(PlainCodingDataRecordsCollection, 0, 256)
-
 	var codingTable = make(CodingMap)
 	// Read coding table
 	for i := 0; i < 256; i++ {
@@ -46,38 +43,15 @@ func Decode(fileName string) (data []byte, err error) {
 			continue
 		}
 
-		var bitsData = make([]byte, bitsNumber)
+		var bitsData= make([]byte, bitsNumber)
 		if _, err := io.ReadFull(inputFile, bitsData); err != nil {
 			return nil, errors.New("Failed reading coding table: bits data for record " + string(i))
 		}
 		codingTable[byte(i)] = bitsData
-
-		if len(bitsData) > 8 {
-			panic(errors.New("Must be not greater than 8 bits"))
-		}
-
-		bitsDataCopy := make([]byte, len(bitsData))
-		copy(bitsDataCopy, bitsData)
-
-		var plainRecord PlainCodingDataRecord
-		plainRecord.symbol = byte(i)
-		plainRecord.sequence = bitsDataCopy
-		plainCodingData = append(plainCodingData, plainRecord)
+		Assert(len(bitsData) <= 8, "Must be not greater than 8 bits")
 	}
 
-	//// Read last byte and its size
-	//lastByteSizeAndByte := make([]byte, 2)
-	//if _, err := io.ReadFull(inputFile, lastByteSizeAndByte); err != nil {
-	//	return nil, errors.New("Failed reading last byte information")
-	//}
-
-	sort.Slice(plainCodingData, func(i, j int) bool {
-		return PlainCodingDataRecordLess(plainCodingData[i], plainCodingData[j])
-	})
-	//fmt.Println(plainCodingData)
-
-	// Build reverse coding table. We can consider building prefix tree for this purposes
-	// so we can navigate bit by bit. (todo)
+	decodingTable := BuildDecodingTable(codingTable)
 
 	decodedBytes := make([]byte, 0)
 
@@ -107,12 +81,10 @@ func Decode(fileName string) (data []byte, err error) {
 				msb := (byte & 0x80) >> 7
 				currentSequence = append(currentSequence, msb)
 				byte <<= 1
-				index := plainCodingData.IndexOfSequence(currentSequence)
+				index := decodingTable.IndexOf(currentSequence)
 				if index != -1 {
-					// match
-					//fmt.Printf("Match(index: %v, byte: %v,  sequence: %v)\n", index, plainCodingData[index].symbol, currentSequence)
 					currentSequence = currentSequence[:0]
-					decodedBytes = append(decodedBytes, plainCodingData[index].symbol)
+					decodedBytes = append(decodedBytes, decodingTable.At(index).symbol)
 				}
 			}
 		}

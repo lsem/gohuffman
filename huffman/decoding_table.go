@@ -1,5 +1,7 @@
 package huffman
 
+import "sort"
+
 type PlainCodingDataRecord struct {
 	symbol   byte
 	sequence []byte
@@ -42,4 +44,33 @@ func (self PlainCodingDataRecordsCollection) LowerBound(x PlainCodingDataRecord)
 		}
 	}
 	return lo
+}
+
+type DecodingTable struct {
+	tableRecords PlainCodingDataRecordsCollection
+}
+
+func BuildDecodingTable(codingMap CodingMap) DecodingTable {
+	newTable := DecodingTable{}
+	newTable.tableRecords = make(PlainCodingDataRecordsCollection, 0)
+	for k, v := range codingMap {
+		newSequence := make([]byte, len(v))
+		copy(newSequence, v)
+		newRecord := PlainCodingDataRecord{symbol: k, sequence: newSequence}
+		newTable.tableRecords = append(newTable.tableRecords, newRecord)
+	}
+
+	sort.Slice(newTable.tableRecords, func(i, j int) bool {
+		return PlainCodingDataRecordLess(newTable.tableRecords[i], newTable.tableRecords[j])
+	})
+
+	return newTable
+}
+
+func (self DecodingTable) IndexOf(sequence []byte) int {
+	return self.tableRecords.IndexOfSequence(sequence)
+}
+
+func (self DecodingTable) At(index int) PlainCodingDataRecord {
+	return self.tableRecords[index]
 }
