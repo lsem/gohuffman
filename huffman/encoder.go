@@ -1,16 +1,12 @@
 package huffman
 
-import (
-	"bytes"
-)
-
 type Encoder struct {
 	currentByte     byte
 	totalBitsCount  int // Total bits set count
 	totalBytesCount int
 	fastCodingTable [][]byte
 	client          IEncoderClient
-	finalized		bool
+	finalized       bool
 }
 
 type IEncoderClient interface {
@@ -29,7 +25,7 @@ func CreateEncoder(client IEncoderClient, codingTable CodingMap) Encoder {
 	return Encoder{fastCodingTable: CreateFastCodingTable(codingTable), client: client}
 }
 
-func (self* Encoder) EncodeByte(b byte) {
+func (self *Encoder) EncodeByte(b byte) {
 	Assert(!self.finalized, "Encoder already finalized and cannot be reused")
 	for _, bit := range self.fastCodingTable[b] {
 		self.currentByte |= bit
@@ -44,9 +40,9 @@ func (self* Encoder) EncodeByte(b byte) {
 	}
 }
 
-func (self* Encoder) Finalize() {
+func (self *Encoder) Finalize() {
 	Assert(!self.finalized, "Encoder already finalized and cannot be reused")
-	lasByteBitsProcessed := byte(self.totalBitsCount%8)
+	lasByteBitsProcessed := byte(self.totalBitsCount % 8)
 	if lasByteBitsProcessed > 0 {
 		needsPadding := 8 - lasByteBitsProcessed
 		for i := 0; i < int(needsPadding-1); i++ {
@@ -57,13 +53,4 @@ func (self* Encoder) Finalize() {
 		self.totalBytesCount++
 	}
 	self.finalized = true
-}
-
-// TODO: Move to separate file
-type BufferWritingClient struct {
-	buffer* bytes.Buffer
-}
-
-func (self BufferWritingClient) ByteReady(b byte) {
-	self.buffer.WriteByte(b)
 }

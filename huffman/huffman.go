@@ -140,7 +140,7 @@ func Encode(data []byte, fileName string) {
 	}
 
 	writeBuffer := new(bytes.Buffer)
-	bufferWriter := BufferWritingClient{buffer: writeBuffer}
+	bufferWriter := BufferWriter{buffer: writeBuffer}
 
 	coding := BuildCodingFromTree( BuildHuffmanTree(
 		frequenciesTableToMap(frequenciesTable)), make([]byte, 0))
