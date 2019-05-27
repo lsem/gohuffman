@@ -1,0 +1,3 @@
+package huffman
+
+var FILE_MAGIC = [4]byte{0x34, 0x89, 0x99, 0xff}

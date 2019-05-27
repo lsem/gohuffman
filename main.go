@@ -1,8 +1,8 @@
 package main
 
 import (
-	"gohuffman/huffman"
 	"fmt"
+	"gohuffman/huffman"
 	"io/ioutil"
 	"log"
 	"math/rand"
@@ -18,7 +18,7 @@ func compareData(arr1, arr2 []byte, n int) bool {
 	}
 
 	for i := 0; i < n; i++ {
-		if arr1[i] != arr2[i]{
+		if arr1[i] != arr2[i] {
 			fmt.Printf("Arrays differ at %v position\n", i)
 			return false
 		}
@@ -37,7 +37,6 @@ func main() {
 	println("Prep")
 	//var data = make([]byte, 10000000)
 
-
 	for i := 0; i < len(data); i++ {
 		data[i] = byte(rand.Intn(76))
 		if i < 30 {
@@ -48,14 +47,14 @@ func main() {
 	println("Start")
 	huffman.Encode(data, "out.huffman")
 
-	decodedData, err := huffman.Decode("out.huffman")
+	decodedData, err := huffman.DecodeFile("out.huffman")
 	if err != nil {
 		log.Fatal(err)
 		return
 	}
 
 	if !compareData(data, decodedData, 0) {
-	//if !compareData(data, decodedData, 607391) {
+		//if !compareData(data, decodedData, 607391) {
 		fmt.Println("Input and Output Arrays differ")
 	} else {
 		fmt.Println("Elements are the same!")
