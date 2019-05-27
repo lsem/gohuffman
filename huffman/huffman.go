@@ -7,6 +7,8 @@ func DecodeFile(fileName string) (data []byte, err error) {
 	if err != nil {
 		return nil, err
 	}
+	defer inputFile.Close()
+
 	return DecodeStream(inputFile)
 }
 
