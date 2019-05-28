@@ -13,7 +13,7 @@ func TestEncodingDecodingRandomLengths(t *testing.T) {
 
 	rand.Seed(1)
 
-	lengths := []byte{ /*1, 2, 3*/ 75, 127, 128, 129, 254, 255}
+	lengths := []byte{ 2, 3, 75, 127, 128, 129, 254, 255}
 
 	for _, length := range lengths {
 
@@ -33,6 +33,7 @@ func TestEncodingDecodingRandomLengths(t *testing.T) {
 
 			if len(outData) != len(inData) {
 				t.Errorf("Input and output data amount differ: %d vs %d\n", len(outData), len(inData))
+				t.Fatal()
 			}
 
 			for bi := 0; bi < len(inData); bi++ {

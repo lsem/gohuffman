@@ -1,12 +1,12 @@
 package huffman
 
 import (
+	"encoding/binary"
 	"errors"
 	"io"
 )
 
 //var FILE_MAGIC = [4]byte{0x34, 0x89, 0x99, 0xff}
-
 
 func DecodeStream(reader io.Reader) (data []byte, err error) {
 	// Read Magic
@@ -16,6 +16,11 @@ func DecodeStream(reader io.Reader) (data []byte, err error) {
 	}
 	if buff != FILE_MAGIC {
 		return nil, errors.New("invalid Magic")
+	}
+
+	var totalBitsCount uint64
+	if err := binary.Read(reader, binary.BigEndian, &totalBitsCount); err != nil {
+		return nil, errors.New("failed reading total bits count")
 	}
 
 	var codingTable = make(CodingMap)
@@ -43,7 +48,7 @@ func DecodeStream(reader io.Reader) (data []byte, err error) {
 	decodingTable := BuildDecodingTable(codingTable)
 	decodedBytes := make([]byte, 0)
 	sliceWritter := SliceWritter{sliceWriteTo: &decodedBytes}
-	decoder := CreateDecoder(&sliceWritter, decodingTable)
+	decoder := CreateDecoder(&sliceWritter, decodingTable, totalBitsCount)
 
 	// Read data by chunks of 1024 (it would be nice to know length of data from header)
 	dataProcessed := false

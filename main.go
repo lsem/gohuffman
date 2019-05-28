@@ -1,11 +1,12 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"gohuffman/huffman"
-	"io/ioutil"
 	"log"
 	"math/rand"
+	"os"
 )
 
 func compareData(arr1, arr2 []byte, n int) bool {

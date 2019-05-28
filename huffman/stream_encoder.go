@@ -2,6 +2,7 @@ package huffman
 
 import (
 	"bytes"
+	"encoding/binary"
 	"errors"
 	"io"
 )
@@ -28,7 +29,8 @@ func EncodeStream(data []byte, writer io.Writer) (err error) {
 	writeBuffer := new(bytes.Buffer)
 	bufferWriter := BufferWriter{buffer: writeBuffer}
 
-	coding := BuildCodingFromTree(BuildHuffmanTree(frequenciesTableToMap(frequenciesTable)), nil)
+	huffmanTree := BuildHuffmanTree(frequenciesTableToMap(frequenciesTable))
+	coding := BuildCodingFromTree(huffmanTree, nil)
 
 	encoder := CreateEncoder(bufferWriter, coding)
 	for _, dataByte := range data {
@@ -46,6 +48,12 @@ func EncodeStream(data []byte, writer io.Writer) (err error) {
 	if bytesWritten != len(FILE_MAGIC[:]) {
 		return errors.New("failed writing magic")
 	}
+
+	err = binary.Write(&headerBuffer, binary.BigEndian, uint64(encoder.totalBitsCount))
+	if err != nil {
+		return errors.New("failed writing total bits count")
+	}
+
 	// Write coding table. Table consists of 256 records, each record has next format:
 	//	1 byte: length
 	//  [length] bytes of data.
