@@ -1,6 +1,7 @@
-package huffman
+package tests
 
 import (
+	. "gohuffman/huffman"
 	"io/ioutil"
 	"math/rand"
 	"testing"

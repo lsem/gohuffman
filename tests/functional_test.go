@@ -1,7 +1,8 @@
-package huffman
+package tests
 
 import (
 	"fmt"
+	"gohuffman/huffman"
 	"math/rand"
 	"os"
 	"testing"
@@ -22,9 +23,9 @@ func TestEncodingDecodingRandomLengths(t *testing.T) {
 				randomData[i] = byte(rand.Intn(255))
 			}
 
-			Encode(randomData, fileName)
-			decodedData, err := DecodeFile(fileName)
-			_ := os.Remove(fileName)
+			huffman.Encode(randomData, fileName)
+			decodedData, err := huffman.DecodeFile(fileName)
+			_ = os.Remove(fileName)
 
 			if err != nil {
 				t.Error("Failed decoding data")
