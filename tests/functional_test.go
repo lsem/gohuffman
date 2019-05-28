@@ -18,25 +18,25 @@ func TestEncodingDecodingRandomLengths(t *testing.T) {
 	for _, length := range lengths {
 
 		t.Run(fmt.Sprintf("%d", length), func(t *testing.T) {
-			randomData := make([]byte, length)
-			for i := 0; i < len(randomData); i++ {
-				randomData[i] = byte(rand.Intn(255))
+			inData := make([]byte, length)
+			for i := 0; i < len(inData); i++ {
+				inData[i] = byte(rand.Intn(255))
 			}
 
-			huffman.Encode(randomData, fileName)
-			decodedData, err := huffman.DecodeFile(fileName)
+			huffman.Encode(inData, fileName)
+			outData, err := huffman.DecodeFile(fileName)
 			_ = os.Remove(fileName)
 
 			if err != nil {
 				t.Error("Failed decoding data")
 			}
 
-			if len(decodedData) != len(randomData) {
-				t.Errorf("Input and output data amount differ: %d vs %d\n", len(decodedData), len(randomData))
+			if len(outData) != len(inData) {
+				t.Errorf("Input and output data amount differ: %d vs %d\n", len(outData), len(inData))
 			}
 
-			for bi := 0; bi < len(randomData); bi++ {
-				if randomData[bi] != decodedData[bi] {
+			for bi := 0; bi < len(inData); bi++ {
+				if inData[bi] != outData[bi] {
 					t.Errorf("Diff at: %v\b", bi)
 				}
 			}
