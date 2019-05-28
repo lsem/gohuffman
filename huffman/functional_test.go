@@ -3,25 +3,28 @@ package huffman
 import (
 	"fmt"
 	"math/rand"
+	"os"
 	"testing"
 )
 
-func TestRandomLengths(t *testing.T) {
+func TestEncodingDecodingRandomLengths(t *testing.T) {
+	const fileName = "TestEncodingDecodingRandomLengths.dat"
+
 	rand.Seed(1)
 
-	lengths := []byte{75, 255, 127, 128, 129 }
+	lengths := []byte{ /*1, 2, 3*/ 75, 127, 128, 129, 254, 255}
 
 	for _, length := range lengths {
 
-		t.Run(fmt.Sprintf("%d", length), func(t*testing.T) {
+		t.Run(fmt.Sprintf("%d", length), func(t *testing.T) {
 			randomData := make([]byte, length)
 			for i := 0; i < len(randomData); i++ {
-				//randomData[i] = byte((i + 1) * 31 % 255)
 				randomData[i] = byte(rand.Intn(255))
 			}
 
-			Encode(randomData, "/tmp/TestRandomLengths.dat")
-			decodedData, err := DecodeFile("/tmp/TestRandomLengths.dat")
+			Encode(randomData, fileName)
+			decodedData, err := DecodeFile(fileName)
+			_ := os.Remove(fileName)
 
 			if err != nil {
 				t.Error("Failed decoding data")
@@ -40,4 +43,3 @@ func TestRandomLengths(t *testing.T) {
 	}
 
 }
-
