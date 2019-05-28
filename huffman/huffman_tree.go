@@ -1,5 +1,10 @@
 package huffman
 
+import (
+	"fmt"
+	"sort"
+)
+
 // TreeNode represents data structure for storing one item
 // of huffman tree which is just ordinary binary tree. If node's
 // symbol is not nil that means it is leave node.
@@ -13,8 +18,32 @@ func (self *TreeNode) IsLeave() bool {
 	return self.symbol != nil
 }
 
-func (self *TreeNode) Serialize() {
+type VisitorFunc func(TreeNode)
+
+func preorderTree(node TreeNode, visitor VisitorFunc) {
+	visitor(node)
+	if node.left != nil {
+		preorderTree(*node.left, visitor)
+	}
+	if node.right != nil {
+		preorderTree(*node.right, visitor)
+	}
+}
+
+func (self TreeNode) String() string {
 	// TODO: Implement
+	result := ""
+	sep := ""
+	visitor := func(node TreeNode) {
+		symbolStr := ""
+		if node.symbol != nil {
+			symbolStr = fmt.Sprint(*node.symbol)
+		}
+		result += fmt.Sprintf("%v %v:%v", sep, node.weight, symbolStr)
+		sep = ", "
+	}
+	preorderTree(self, visitor)
+	return result
 }
 
 func (self *TreeNode) Height() int {
@@ -33,6 +62,12 @@ func BuildHuffmanTree(frequencies map[byte]int) TreeNode {
 		nodes = append(nodes,
 			&TreeNode{left: nil, right: nil, weight: uint32(v), symbol: &symbol})
 	}
+
+	// This sort is needed to have deterministic order. Since queue.Init() will establish
+	// heap invariant by reordering which is some sort of stable.
+	sort.Slice(nodes, func(i, j int) bool {
+		return *nodes[i].symbol < *nodes[j].symbol
+	})
 
 	var queue PriorityQueue
 	queue.Init(nodes)
