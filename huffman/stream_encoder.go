@@ -17,7 +17,7 @@ func frequenciesTableToMap(table [256]int) map[byte]int {
 	return frequenciesAsMap
 }
 
-func EncodeStream(data []byte, writer io.Writer) (err error) {
+func EncodeToStream(data []byte, writer io.Writer) (err error) {
 	// calculate frequencies for each of bytes
 	// Since we are interested each byte of entire input dataset, map operations
 	// are quite slow at this amount of data, so we use just table for this purposes.
@@ -64,8 +64,6 @@ func EncodeStream(data []byte, writer io.Writer) (err error) {
 			headerBuffer.WriteByte(bit)
 		}
 	}
-
-	// TODO: move out header into separate encode method so we can test it independently
 
 	// write header
 	_, err = headerBuffer.WriteTo(writer)

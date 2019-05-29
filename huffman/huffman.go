@@ -20,7 +20,7 @@ func Encode(data []byte, fileName string) {
 	}
 	defer outFile.Close()
 
-	err = EncodeStream(data, outFile)
+	err = EncodeToStream(data, outFile)
 	if err != nil {
 		panic(err)
 	}
