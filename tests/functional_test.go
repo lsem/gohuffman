@@ -10,8 +10,8 @@ import (
 
 func TestEncodingDecodingRandomLengths(t *testing.T) {
 	rand.Seed(1)
-	
-	lengths := []int{ 2, 3, 75, 127, 128, 129, 254, 255}
+
+	lengths := []int{2, 3, 75, 127, 128, 129, 254, 255}
 
 	if !testing.Short() {
 		for i := 76; i < 127; i++ {
@@ -25,7 +25,6 @@ func TestEncodingDecodingRandomLengths(t *testing.T) {
 	for _, length := range lengths {
 		rand.Seed(1)
 		fileName := fmt.Sprintf("TestEncodingDecodingRandomLengths_%d.dat", length);
-
 		t.Run(fmt.Sprintf("%d", length), func(t *testing.T) {
 			inData := make([]byte, length)
 			for i := 0; i < len(inData); i++ {

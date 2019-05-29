@@ -7,11 +7,23 @@ import (
 	"io"
 )
 
-func frequenciesTableToMap(table [256]int) map[byte]int {
+var (
+	ErrorWriteMagic          = errors.New("failed writing magic")
+	ErrorWriteTotalBitsCount = errors.New("failed writing total bits count")
+	ErrorWriteHeader         = errors.New("error writing header to stream")
+	ErrorWriteData           = errors.New("error writing data to stream")
+)
+
+func BuildFrequenciesTMap(data []byte) map[byte]int {
+	var frequenciesTable [256]int
+	for _, x := range data {
+		frequenciesTable[x]++
+	}
+
 	frequenciesAsMap := make(map[byte]int)
 	for i := 0; i < 256; i++ {
-		if table[i] != 0 {
-			frequenciesAsMap[byte(i)] = table[i]
+		if frequenciesTable[i] != 0 {
+			frequenciesAsMap[byte(i)] = frequenciesTable[i]
 		}
 	}
 	return frequenciesAsMap
@@ -21,15 +33,11 @@ func EncodeToStream(data []byte, writer io.Writer) (err error) {
 	// calculate frequencies for each of bytes
 	// Since we are interested each byte of entire input dataset, map operations
 	// are quite slow at this amount of data, so we use just table for this purposes.
-	var frequenciesTable [256]int
-	for _, x := range data {
-		frequenciesTable[x]++
-	}
 
 	writeBuffer := new(bytes.Buffer)
 	bufferWriter := BufferWriter{buffer: writeBuffer}
 
-	huffmanTree := BuildHuffmanTree(frequenciesTableToMap(frequenciesTable))
+	huffmanTree := BuildHuffmanTree(BuildFrequenciesTMap(data))
 	coding := BuildCodingFromTree(huffmanTree, nil)
 
 	encoder := CreateEncoder(bufferWriter, coding)
@@ -46,12 +54,12 @@ func EncodeToStream(data []byte, writer io.Writer) (err error) {
 		return err
 	}
 	if bytesWritten != len(FILE_MAGIC[:]) {
-		return errors.New("failed writing magic")
+		return ErrorWriteMagic
 	}
 
 	err = binary.Write(&headerBuffer, binary.BigEndian, uint64(encoder.totalBitsCount))
 	if err != nil {
-		return errors.New("failed writing total bits count")
+		return ErrorWriteTotalBitsCount
 	}
 
 	// Write coding table. Table consists of 256 records, each record has next format:
@@ -68,13 +76,13 @@ func EncodeToStream(data []byte, writer io.Writer) (err error) {
 	// write header
 	_, err = headerBuffer.WriteTo(writer)
 	if err != nil {
-		panic(err)
+		return ErrorWriteHeader
 	}
 
 	// write data
 	_, err = writeBuffer.WriteTo(writer)
 	if err != nil {
-		panic(err)
+		return ErrorWriteData
 	}
 
 	return nil
