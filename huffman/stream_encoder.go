@@ -65,6 +65,8 @@ func EncodeStream(data []byte, writer io.Writer) (err error) {
 		}
 	}
 
+	// TODO: move out header into separate encode method so we can test it independently
+
 	// write header
 	_, err = headerBuffer.WriteTo(writer)
 	if err != nil {

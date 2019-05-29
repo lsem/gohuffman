@@ -42,7 +42,6 @@ func DecodeStream(reader io.Reader) (data []byte, err error) {
 			return nil, errors.New("Failed reading coding table: bits data for record " + string(i))
 		}
 		codingTable[byte(i)] = bitsData
-		Assert(len(bitsData) <= 8, "Must be not greater than 8 bits")
 	}
 
 	decodingTable := BuildDecodingTable(codingTable)
