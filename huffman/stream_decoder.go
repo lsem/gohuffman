@@ -55,19 +55,17 @@ func DecodeStream(reader io.Reader) (data []byte, err error) {
 	sliceWriter := SliceWritter{sliceWriteTo: &decodedBytes}
 	decoder := CreateDecoder(&sliceWriter, decodingTable, totalBitsCount)
 
-	dataProcessed := false
-	for !dataProcessed {
-		// Read data
+	done := false
+	for !done {
 		dataChunk := make([]byte, 1024)
 		if bytesRead, err := io.ReadFull(reader, dataChunk); err != nil {
 			if err == io.ErrUnexpectedEOF || err == io.EOF {
 				dataChunk = dataChunk[:bytesRead]
-				dataProcessed = true
+				done = true
 			} else {
 				return nil, err
 			}
 		}
-		// Process data
 		for _, b := range dataChunk {
 			decoder.DecodeByte(b)
 		}
