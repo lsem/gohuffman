@@ -11,19 +11,28 @@ func (encodedData *EncodedData) ByteReady(b byte) {
 	*encodedData = append(*encodedData, b)
 }
 
+func buildFrequnciesFromSlice(s []byte) map[byte]int {
+	f := map[byte]int{}
+	for _, b := range s {
+		f[byte(b)]++
+	}
+	return f
+}
+
+func createEncoderForTest(data []byte, resultAggregator *EncodedData) Encoder {
+	frequencies := buildFrequnciesFromSlice(data)
+	huffmanTree := BuildHuffmanTree(frequencies)
+	coding := BuildCodingFromTree(huffmanTree, nil)
+	encoder := CreateEncoder(resultAggregator, coding)
+	return encoder
+}
+
 func TestEncodedDataIsShorterThenOriginal(t *testing.T) {
 	encodedData := EncodedData{}
 
 	data := []byte{1, 2, 3, 4, 5}
 
-	frequencies := map[byte]int{}
-	for _, b := range data {
-		frequencies[byte(b)]++
-	}
-
-	huffmanTree := BuildHuffmanTree(frequencies)
-	coding := BuildCodingFromTree(huffmanTree, nil)
-	encoder := CreateEncoder(&encodedData, coding)
+	encoder := createEncoderForTest(data, &encodedData)
 	for _, dataByte := range data {
 		encoder.EncodeByte(dataByte)
 	}
@@ -42,14 +51,7 @@ func TestDataConsistingOfSingleValueShouldBeEncodedToOneBit(t *testing.T) {
 		data = append(data, 7, 200)
 	}
 
-	frequencies := map[byte]int{}
-	for _, b := range data {
-		frequencies[byte(b)]++
-	}
-
-	huffmanTree := BuildHuffmanTree(frequencies)
-	coding := BuildCodingFromTree(huffmanTree, nil)
-	encoder := CreateEncoder(&encodedData, coding)
+	encoder := createEncoderForTest(data, &encodedData)
 	for _, dataByte := range data {
 		encoder.EncodeByte(dataByte)
 	}
@@ -74,14 +76,7 @@ func TestCaseWhenAllBytesHasSameProbabilityExceptOne(t *testing.T) {
 	// Add 4 zeroes more (total is 5).
 	data = append(data, 0, 0, 0, 0)
 
-	frequencies := map[byte]int{}
-	for _, b := range data {
-		frequencies[byte(b)]++
-	}
-
-	huffmanTree := BuildHuffmanTree(frequencies)
-	coding := BuildCodingFromTree(huffmanTree, nil)
-	encoder := CreateEncoder(&encodedData, coding)
+	encoder := createEncoderForTest(data, &encodedData)
 	for _, dataByte := range data {
 		encoder.EncodeByte(dataByte)
 	}
